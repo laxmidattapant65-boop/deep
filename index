@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRN Dashboard</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:linear-gradient(135deg,#0b1220,#0f172a);
+    color:white;
+    padding:15px;
+}
+
+/* CONTAINER */
+.container{
+    max-width:950px;
+    margin:auto;
+}
+
+/* TITLE */
+h1{
+    text-align:center;
+    color:#38bdf8;
+    margin-bottom:15px;
+    letter-spacing:1px;
+}
+
+/* TOP BAR */
+.topbar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    justify-content:center;
+    margin-bottom:12px;
+}
+
+/* FILTER BUTTONS */
+.filters{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    justify-content:center;
+}
+
+.filters button,
+.resetBtn{
+    padding:7px 12px;
+    border:none;
+    border-radius:20px;
+    cursor:pointer;
+    font-weight:bold;
+    transition:0.2s;
+}
+
+.filters button{
+    background:#1e293b;
+    color:#cbd5e1;
+}
+
+.filters button:hover{
+    transform:scale(1.05);
+}
+
+.filters button.active{
+    background:linear-gradient(135deg,#22c55e,#16a34a);
+    color:white;
+}
+
+.resetBtn{
+    background:linear-gradient(135deg,#ef4444,#b91c1c);
+    color:white;
+}
+
+/* SEARCH */
+.search{
+    width:100%;
+    padding:12px;
+    border-radius:12px;
+    border:none;
+    margin-bottom:15px;
+    background:#111827;
+    color:white;
+    border:1px solid #334155;
+    outline:none;
+}
+
+.search:focus{
+    border-color:#38bdf8;
+    box-shadow:0 0 8px #38bdf8;
+}
+
+/* CARD */
+.card{
+    background:linear-gradient(135deg,#1e293b,#0f172a);
+    border:1px solid #334155;
+    padding:12px;
+    margin-bottom:10px;
+    border-radius:14px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    transition:0.2s;
+}
+
+.card:hover{
+    transform:scale(1.01);
+    border-color:#38bdf8;
+}
+
+/* LEFT */
+.left{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+}
+
+.name{
+    font-size:15px;
+    font-weight:bold;
+    color:#f8fafc;
+}
+
+.userid{
+    font-size:12px;
+    color:#facc15;
+    background:#111827;
+    padding:3px 8px;
+    border-radius:8px;
+    width:max-content;
+    border:1px solid #334155;
+}
+
+/* RIGHT */
+.right{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.checks{
+    display:flex;
+    gap:8px;
+    font-size:12px;
+}
+
+input[type="checkbox"]{
+    transform:scale(1.2);
+    cursor:pointer;
+}
+
+/* COPY BUTTON */
+.copyBtn{
+    padding:7px 10px;
+    border:none;
+    border-radius:8px;
+    background:#22c55e;
+    color:white;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.copyBtn.copied{
+    background:#f59e0b;
+    color:black;
+    transform:scale(1.05);
+}
+
+/* MOBILE */
+@media (max-width:600px){
+    .card{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:10px;
+    }
+
+    .right{
+        width:100%;
+        justify-content:space-between;
+        flex-wrap:wrap;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>CRN DASHBOARD</h1>
+
+<div class="topbar">
+
+<div class="filters">
+<button id="allBtn" class="active" onclick="setFilter('all')">All (0)</button>
+<button id="appliedBtn" onclick="setFilter('applied')">Applied (0)</button>
+<button id="verifiedBtn" onclick="setFilter('verified')">Verified (0)</button>
+<button id="notAppliedBtn" onclick="setFilter('not_applied')">Not Applied (0)</button>
+<button id="notVerifiedBtn" onclick="setFilter('not_verified')">Not Verified (0)</button>
+</div>
+
+<button class="resetBtn" onclick="resetAll()">Reset</button>
+
+</div>
+
+<input class="search" id="search" placeholder="Search Name or User ID..." onkeyup="render()">
+
+<div id="cards"></div>
+
+</div>
+
+<script>
+
+const accounts = [
+{name:"Tej Raj Pant", userid:"07430786", crn:"9999-R03065137"},
+{name:"Anju Pant", userid:"07423751", crn:"9999-R03063047"},
+{name:"Dhanmati Joshi Pant", userid:"07423692", crn:"9999-R03063000"},
+{name:"Dai Kr", userid:"02011436", crn:"41700104739"},
+{name:"Laxmi Datta Pant", userid:"06646222", crn:"9999-R02702532"},
+{name:"Deepak Raj Pant", userid:"00961126", crn:"41700121123"},
+{name:"Asmita Pant", userid:"07530466", crn:"9999-R03140544"},
+{name:"Diwas Pant", userid:"07530675", crn:"9999-R03137425"},
+{name:"Bhagarati Pant", userid:"07530470", crn:"9999-R03137135"},
+{name:"Narma Devi Pant", userid:"06462073", crn:"R018524931"},
+{name:"Toya Raj Awasthi", userid:"05291327", crn:"5291327"},
+{name:"Didi", userid:"05624314", crn:"C71153759"},
+{name:"Vinaju", userid:"05728795", crn:"C71400715"},
+{name:"Bhanji", userid:"05663998", crn:"C71507826"}
+];
+
+let status = JSON.parse(localStorage.getItem("status")) || {};
+let filter = "all";
+
+function save(){
+    localStorage.setItem("status", JSON.stringify(status));
+}
+
+/* FILTER */
+function setFilter(f){
+    filter = f;
+    document.querySelectorAll(".filters button").forEach(b=>b.classList.remove("active"));
+    event.target.classList.add("active");
+    render();
+}
+
+/* TOGGLE */
+function toggle(id,type,val){
+    if(!status[id]) status[id]={};
+    status[id][type]=val;
+    save();
+    render();
+}
+
+/* COPY WITH COLOR CHANGE */
+function copy(text,btn){
+    navigator.clipboard.writeText(text);
+
+    btn.classList.add("copied");
+    btn.innerText = "Copied ✓";
+
+    setTimeout(()=>{
+        btn.classList.remove("copied");
+        btn.innerText = "Copy";
+    },1500);
+}
+
+/* SEARCH + FILTER */
+function match(acc){
+    let q = document.getElementById("search").value.toLowerCase();
+    let s = status[acc.userid] || {};
+
+    let searchMatch =
+        acc.name.toLowerCase().includes(q) ||
+        acc.userid.toLowerCase().includes(q);
+
+    if(filter==="applied" && !s.applied) return false;
+    if(filter==="verified" && !s.verified) return false;
+    if(filter==="not_applied" && s.applied) return false;
+    if(filter==="not_verified" && s.verified) return false;
+
+    return searchMatch;
+}
+
+/* COUNTS */
+function updateCounts(){
+
+let counts = {
+all: accounts.length,
+applied:0,
+verified:0,
+not_applied:0,
+not_verified:0
+};
+
+accounts.forEach(acc=>{
+let s = status[acc.userid] || {};
+
+if(s.applied) counts.applied++;
+else counts.not_applied++;
+
+if(s.verified) counts.verified++;
+else counts.not_verified++;
+});
+
+document.getElementById("allBtn").innerText = `All (${counts.all})`;
+document.getElementById("appliedBtn").innerText = `Applied (${counts.applied})`;
+document.getElementById("verifiedBtn").innerText = `Verified (${counts.verified})`;
+document.getElementById("notAppliedBtn").innerText = `Not Applied (${counts.not_applied})`;
+document.getElementById("notVerifiedBtn").innerText = `Not Verified (${counts.not_verified})`;
+}
+
+/* RENDER */
+function render(){
+updateCounts();
+
+document.getElementById("cards").innerHTML =
+accounts.filter(match).map(acc=>{
+let s = status[acc.userid] || {};
+
+return `
+<div class="card">
+
+<div class="left">
+<div class="name">${acc.name}</div>
+<div class="userid">${acc.userid}</div>
+</div>
+
+<div class="right">
+
+<div class="checks">
+<label><input type="checkbox"
+onchange="toggle('${acc.userid}','applied',this.checked)"
+${s.applied?"checked":""}> Applied</label>
+
+<label><input type="checkbox"
+onchange="toggle('${acc.userid}','verified',this.checked)"
+${s.verified?"checked":""}> Verified</label>
+</div>
+
+<button class="copyBtn" onclick="copy('${acc.crn}',this)">
+Copy
+</button>
+
+</div>
+
+</div>
+`;
+}).join("");
+}
+
+/* RESET */
+function resetAll(){
+    if(confirm("Reset all data?")){
+        status = {};
+        localStorage.removeItem("status");
+        render();
+    }
+}
+
+render();
+
+</script>
+
+</body>
+</html>
